@@ -5,14 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
 <title>Training</title>
 
-
 <!-- iOS "Add to Home Screen" support -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Training">
 <meta name="theme-color" content="#14171C">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%2314171C'/%3E%3Cellipse cx='50' cy='52' rx='34' ry='22' fill='none' stroke='%23D2491F' stroke-width='8'/%3E%3C/svg%3E">
-
 
 <style>
 :root{
@@ -367,6 +365,7 @@ button{font-family:inherit;}
           <button data-s="A" class="active">Day A</button>
           <button data-s="B">Day B</button>
           <button data-s="C">Day C</button>
+          <button data-s="D">Day D</button>
         </div>
         <p class="meta" id="strengthMeta">—</p>
         <div id="strengthList"></div>
@@ -443,11 +442,11 @@ button{font-family:inherit;}
   var DOW_FULL = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 
   var schedule = [
-    { items: [] },                                                                             // Sun — REST
-    { items: [{label:"Strength A", strength:"A"}, {label:"Easy Run", zone:"z2"}] },           // Mon
+    { items: [{label:"Strength A", strength:"A"}, {label:"Easy Run", zone:"z2"}] },           // Sun
+    { items: [{label:"Core Reset", strength:"D"}] },                                           // Mon — REST (light)
     { items: [{label:"Intervals", zone:"intervals"}] },                                        // Tue
-    { items: [{label:"Strength B", strength:"B"}] },                                           // Wed
-    { items: [] },                                                                             // Thu — REST
+    { items: [{label:"Core Reset", strength:"D"}] },                                           // Wed — REST (light)
+    { items: [{label:"Strength B", strength:"B"}] },                                           // Thu
     { items: [{label:"Tempo Run", zone:"tempo"}, {label:"Strength C", strength:"C"}] },        // Fri
     { items: [{label:"Long Run", zone:"z2", longRun:true}] }                                   // Sat
   ];
@@ -460,20 +459,21 @@ button{font-family:inherit;}
       {l:"Goblet Squat",s:"3 × 8–10",p:"squat",g:"1760-yn8yg1r"},
       {l:"Push-Ups",s:"3 × 8–12",p:"push",g:"0662-I4hDWkc"},
       {l:"One-Arm DB Row",s:"3 × 10/side",p:"pull",g:"0292-C0MA9bC"},
-      {l:"DB Step-Ups",s:"3 × 10/leg",p:"step",g:"0431-aXtJhlg"},
+      {l:"DB Step-Ups (Bench)",s:"3 × 10/leg",p:"step",g:"0431-aXtJhlg"},
       {l:"KB Swings",s:"3 × 15",p:"swing",g:"0549-UHJlbu3"},
-      {l:"Lateral Band Walks",s:"3 × 15 steps/side",p:"lateral",g:"0628-O95afRA"},
-      {l:"Standing Calf Raises",s:"3 × 15–20",p:"calf",g:"1373-bJYHBIN"},
+      {l:"Standing Cable Hip Abduction",s:"3 × 15/side",p:"lateral"},
+      {l:"DB Standing Calf Raise",s:"3 × 15–20",p:"calf",g:"1373-bJYHBIN"},
       {l:"Plank",s:"3 × 45–60 sec",p:"hold",g:"3665-hCjGsRQ"},
-      {l:"Farmer Carry (Optional)",s:"3 × 40–60 sec",p:"carry",g:"2133-qPEzJjA"}
+      {l:"Farmer Carry",s:"3 × 40–60 sec",p:"carry",g:"2133-qPEzJjA"},
+      {l:"Jump Rope (Optional Finisher)",s:"3 × 1 min",p:"calf"}
     ],
     B:[
       {l:"Romanian Deadlift",s:"3 × 8–10",p:"hinge",g:"1459-rR0LJzx"},
       {l:"Walking Lunges",s:"3 × 10/leg",p:"step",g:"1460-IZVHb27"},
       {l:"Single-Leg RDL",s:"3 × 8/leg",p:"hinge",g:"1757-gKozT8X"},
       {l:"Standing DB Overhead Press",s:"3 × 8–10",p:"press",g:"0426-A6wtbuL"},
-      {l:"Bulgarian Split Squat",s:"3 × 8/leg",p:"step",g:"0410-qx4fgX7"},
-      {l:"Pull-ups / Inverted Rows",s:"3 × 6–10",p:"pull",g:"0652-lBDjFxJ"},
+      {l:"Bulgarian Split Squat (Bench)",s:"3 × 8/leg",p:"step",g:"0410-qx4fgX7"},
+      {l:"Cable Lat Pulldown",s:"3 × 10–12",p:"pull"},
       {l:"Side Plank",s:"3 × 30–45 sec/side",p:"hold",g:"3544-5VXmnV5"},
       {l:"Dead Bug",s:"3 × 10/side",p:"deadbug",g:"0276-iny3m5y"},
       {l:"Hammer Curls (Optional)",s:"2 × 12",p:"curl",g:"0313-slDvUAU"},
@@ -482,12 +482,20 @@ button{font-family:inherit;}
     C:[
       {l:"Kettlebell Swings",s:"3 × 15",p:"swing",g:"0549-UHJlbu3"},
       {l:"Turkish Get-Up",s:"2 × 3/side",p:"getup",g:"0551-Ha7SZ3y"},
-      {l:"Lateral Lunge",s:"3 × 8/leg",p:"lateral",g:"1410-py1HSzx"},
+      {l:"DB Lateral Lunge",s:"3 × 8/leg",p:"lateral",g:"1410-py1HSzx"},
       {l:"Pallof Press",s:"3 × 10/side",p:"rotate",g:"0979-9pa4H5m"},
       {l:"Single-Leg Glute Bridge",s:"3 × 10/leg",p:"bridge",g:"3645-rmEukuS"},
       {l:"Suitcase Carry",s:"3 × 30–40 sec/side",p:"carry",g:"3548-mWBtgmb"},
-      {l:"Rotational Med-Ball Throw (Optional)",s:"2 × 8/side",p:"rotate",g:"1353-PsVS1QP"},
+      {l:"Cable Rotational Chop (Optional)",s:"2 × 8/side",p:"rotate"},
       {l:"Tibialis Raises",s:"2 × 15",p:"calf"}
+    ],
+    D:[
+      {l:"Diaphragmatic Breathing + Draw-In",s:"3 × 10 breaths",p:"hold"},
+      {l:"Dead Bug",s:"3 × 10/side",p:"deadbug",g:"0276-iny3m5y"},
+      {l:"Bird Dog",s:"3 × 8/side",p:"deadbug"},
+      {l:"Posterior Pelvic Tilts",s:"2 × 15",p:"bridge"},
+      {l:"Glute Bridge Hold",s:"3 × 20–30 sec",p:"bridge"},
+      {l:"Kneeling Hip Flexor Stretch",s:"2 × 30–45 sec/side",p:"hold"}
     ]
   };
   // Media © Gym visual — https://gymvisual.com/, redistributed via
@@ -612,9 +620,9 @@ button{font-family:inherit;}
   var state = load();
 
   function defaultState(){
-    var s = { week:{}, strengthDone:{A:[],B:[],C:[]}, strengthWt:{A:[],B:[],C:[]}, longrun:[], startDate:'2026-08-03' };
+    var s = { week:{}, strengthDone:{A:[],B:[],C:[],D:[]}, strengthWt:{A:[],B:[],C:[],D:[]}, longrun:[], startDate:'2026-08-03' };
     for(var d=0; d<7; d++){ s.week[d] = schedule[d].items.map(function(){return false;}); }
-    ["A","B","C"].forEach(function(k){
+    ["A","B","C","D"].forEach(function(k){
       s.strengthDone[k] = strength[k].map(function(){return false;});
       s.strengthWt[k] = strength[k].map(function(){return "";});
     });
@@ -638,7 +646,7 @@ button{font-family:inherit;}
           }
         }
       }
-      ["A","B","C"].forEach(function(k){
+      ["A","B","C","D"].forEach(function(k){
         if(parsed.strengthDone && parsed.strengthDone[k]){
           for(var i=0;i<s.strengthDone[k].length;i++){
             if(typeof parsed.strengthDone[k][i]==='boolean') s.strengthDone[k][i] = parsed.strengthDone[k][i];
@@ -774,7 +782,7 @@ button{font-family:inherit;}
 
   /* ---------------- strength view ---------------- */
   var currentStrength = 'A';
-  var strengthLabels = { A:'Day A — Squat & Power', B:'Day B — Posterior Chain & Stability', C:'Day C — Functional & Runner\u2019s Core' };
+  var strengthLabels = { A:'Day A — Squat & Power', B:'Day B — Posterior Chain & Stability', C:'Day C — Functional & Runner\u2019s Core', D:'Day D — Core Reset & Posture' };
   function renderStrength(){
     document.querySelectorAll('#segCtrl button').forEach(function(b){
       b.classList.toggle('active', b.getAttribute('data-s')===currentStrength);
