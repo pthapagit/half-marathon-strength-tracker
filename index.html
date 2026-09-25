@@ -173,7 +173,7 @@ button{font-family:inherit;}
 }
 .segctrl button{
   flex:1;border:none;background:transparent;color:var(--ink-dim);
-  padding:9px 0;border-radius:9px;font-size:14px;font-weight:700;
+  padding:8px 4px;border-radius:9px;font-size:12.5px;font-weight:700;line-height:1.2;
   transition:background .15s ease,color .15s ease;
 }
 .segctrl button.active{background:var(--track);color:#fff;}
@@ -395,9 +395,9 @@ button{font-family:inherit;}
     <section class="view" id="view-strength">
       <div class="card" style="margin-top:18px;">
         <div class="segctrl" id="segCtrl">
-          <button data-s="A" class="active">Day A</button>
-          <button data-s="B">Day B</button>
-          <button data-s="C">Core</button>
+          <button data-s="A" class="active">Lift &amp; Carry</button>
+          <button data-s="B">Single-Leg Power</button>
+          <button data-s="C">Core Reset</button>
         </div>
         <p class="meta" id="strengthMeta">—</p>
         <div class="protocol" id="strengthProtocol"></div>
@@ -494,10 +494,10 @@ button{font-family:inherit;}
   // before a quality run (Tue intervals, Fri tempo, Sat long).
   var schedule = [
     { items: [{label:"Rest or 15–20 min Shakeout", zone:"recovery"}] },                        // Sun — recovery from long run
-    { items: [{label:"Strength A", strength:"A"}] },                                           // Mon
+    { items: [{label:"Lift & Carry", strength:"A"}] },                                         // Mon
     { items: [{label:"Intervals", zone:"intervals"}] },                                        // Tue — VO2 key session
     { items: [{label:"Core Reset", strength:"C"}] },                                           // Wed — active recovery
-    { items: [{label:"Strength B", strength:"B"}] },                                           // Thu
+    { items: [{label:"Single-Leg Power", strength:"B"}] },                                     // Thu
     { items: [{label:"Tempo Run", zone:"tempo"}] },                                            // Fri
     { items: [{label:"Long Run", zone:"z2", longRun:true}] }                                   // Sat
   ];
@@ -902,7 +902,7 @@ button{font-family:inherit;}
       } else if(item.zone){
         chipHtml = '<span class="chip '+zoneClass[item.zone]+'">'+zoneChip(item.zone)+'</span>';
       } else if(item.strength){
-        chipHtml = '<span class="chip recovery">'+(item.strength==='C' ? 'Core \u00b7 18 min' : 'Strength '+item.strength+' \u00b7 70 min')+'</span>';
+        chipHtml = '<span class="chip recovery">'+strengthChip[item.strength]+'</span>';
       }
       row.innerHTML =
         '<button class="check'+(on?' on':'')+'" data-i="'+i+'" aria-label="Toggle complete">'+CHECK_SVG+'</button>'+
@@ -966,9 +966,14 @@ button{font-family:inherit;}
 
   /* ---------------- strength view ---------------- */
   var currentStrength = 'A';
+  var strengthChip = {
+    A:'Lift & Carry \u00b7 70 min',
+    B:'Single-Leg \u00b7 70 min',
+    C:'Core \u00b7 18 min'
+  };
   var strengthLabels = {
-    A:'Day A — Lift & Carry Strength',
-    B:'Day B — Single-Leg Power & Stability',
+    A:'Lift & Carry Strength',
+    B:'Single-Leg Power & Stability',
     C:'Core Reset — Posture, Breathing & Hips'
   };
   var strengthProtocol = {

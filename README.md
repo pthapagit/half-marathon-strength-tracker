@@ -6,10 +6,10 @@ A single-file, installable PWA for tracking a 14-week half marathon training blo
 
 - **Weekly schedule view** — each day's run and/or strength session laid out and checkable.
 - **Two full strength days plus a short core day** — built only around dumbbells, bench, chest/shoulder machines, leg curl/extension, cable (no lat pulldown), bike and treadmill. No barbell or racks required.
-  - **Day A — Lift & Carry Strength** (Monday)
-  - **Day B — Single-Leg Power & Stability** (Thursday)
+  - **Lift & Carry Strength** (Monday)
+  - **Single-Leg Power & Stability** (Thursday)
   - **Core Reset — Posture, Breathing & Hips** (Wednesday, ~18 min active recovery)
-- **Time-boxed sessions** — Day A and Day B run as supersets and are built to fit a 70 minute gym visit (5 min warm-up, ~50 min work, 5 min cool-down). Each day shows its warm-up, superset format, rest periods and target time.
+- **Time-boxed sessions** — Lift & Carry and Single-Leg Power run as supersets and are built to fit a 70 minute gym visit (5 min warm-up, ~50 min work, 5 min cool-down). Each day shows its warm-up, superset format, rest periods and target time.
 - **Functional carry-over** — every exercise names the everyday task it transfers to (carrying groceries, stairs with shopping, lifting luggage overhead), shown when you tap into the demo.
 - **Per-exercise weight logging** — log the weight used for each lift, saved between sessions so you can track progressive overload.
 - **Exercise demo GIFs** — tap any exercise to see a demo animation full-screen. Most clips come from a public dataset. Pogo hops, jump squats, and the machine shoulder press, chest press, and leg curl use local clips in `gifs/` because the dataset has no match. If a clip fails to load, the app falls back to a lightweight built-in animation.
@@ -49,10 +49,10 @@ open index.html
 | Day | Session |
 |---|---|
 | Sun | Rest, or a 15–20 min shakeout |
-| Mon | Strength A — Lift & Carry Strength |
+| Mon | Lift & Carry Strength |
 | Tue | Intervals — VO2 max key session |
 | Wed | Core Reset (~18 min) |
-| Thu | Strength B — Single-Leg Power & Stability |
+| Thu | Single-Leg Power & Stability |
 | Fri | Tempo Run |
 | Sat | Long Run |
 
