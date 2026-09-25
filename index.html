@@ -184,6 +184,13 @@ button{font-family:inherit;}
 .exrow .label{flex:1;font-size:14.5px;font-weight:600;}
 .exrow .label.done{color:var(--ink-dim);text-decoration:line-through;text-decoration-color:var(--ink-faint);}
 .exrow .sets{display:block;font-size:12px;font-weight:500;color:var(--ink-dim);margin-top:1px;}
+.protocol{
+  background:var(--surface-2);border-radius:10px;padding:11px 12px;margin-bottom:6px;
+}
+.protocol .prow{display:flex;gap:8px;font-size:12px;line-height:1.5;}
+.protocol .prow + .prow{margin-top:5px;}
+.protocol .pk{color:var(--ink-faint);font-weight:700;flex:0 0 58px;}
+.protocol .pv{color:var(--ink-dim);flex:1;}
 .wtinput{
   width:54px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;
   color:var(--ink);font-size:13px;font-weight:600;text-align:center;padding:6px 2px;
@@ -221,6 +228,7 @@ button{font-family:inherit;}
 .demo-overlay .demo-fig .pose circle{fill:var(--track);stroke:none;}
 .demo-overlay .demo-name{font-size:19px;font-weight:700;margin:18px 0 4px;}
 .demo-overlay .demo-sets{font-size:14px;color:var(--ink-dim);font-variant-numeric:tabular-nums;}
+.demo-overlay .demo-why{font-size:12.5px;color:var(--cardio);margin-top:10px;max-width:280px;line-height:1.45;}
 .demo-overlay .demo-attr{font-size:10.5px;color:var(--ink-faint);margin-top:6px;}
 .demo-overlay .demo-close{
   margin-top:26px;background:var(--surface-2);border:1px solid var(--line);color:var(--ink-dim);
@@ -228,6 +236,9 @@ button{font-family:inherit;}
 }
 
 /* Progress / track path */
+.trackscroll{overflow-x:auto;overflow-y:hidden;margin:0 -18px;padding:0 18px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.trackscroll::-webkit-scrollbar{display:none;}
+.trackinner{min-width:100%;}
 .trackwrap{position:relative;height:88px;margin:6px 0 4px;}
 .trackwrap svg.path{position:absolute;inset:0;width:100%;height:100%;}
 .markers{
@@ -267,6 +278,30 @@ button{font-family:inherit;}
   background:transparent;border:none;color:var(--ink);font-size:13.5px;font-weight:700;
   font-family:inherit;color-scheme:dark;text-align:right;
 }
+
+.hr-form{display:flex;gap:8px;align-items:flex-end;margin-bottom:8px;}
+.hr-field{flex:1;min-width:0;}
+.hr-field label{
+  display:block;font-size:11px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--ink-faint);margin-bottom:6px;
+}
+.hr-field input{
+  width:100%;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius-sm);
+  color:var(--ink);font-size:16px;font-weight:700;text-align:center;padding:10px 6px;
+  font-family:inherit;font-variant-numeric:tabular-nums;
+}
+.hr-save{
+  flex:0 0 auto;background:var(--track);border:none;color:#fff;
+  border-radius:var(--radius-sm);padding:11px 14px;font-size:13.5px;font-weight:700;
+  margin-bottom:0;
+}
+.hr-save:active{opacity:.85;}
+.hr-note{font-size:12.5px;color:var(--ink-dim);line-height:1.45;margin:8px 0 0;}
+.hr-error{font-size:12.5px;color:var(--track);margin:0 0 8px;line-height:1.4;}
+.hr-error:empty{display:none;}
+.zonebar{display:flex;height:12px;border-radius:99px;overflow:hidden;gap:3px;margin:12px 0 4px;}
+.zonebar span{flex:1;display:block;border-radius:3px;}
+#intervalLabel,#tempoLabel{text-align:right;max-width:64%;line-height:1.35;white-space:normal;}
 
 /* ---------- Tab bar ---------- */
 .tabbar{
@@ -343,9 +378,7 @@ button{font-family:inherit;}
       <div class="card">
         <h2>Heart Rate Zones</h2>
         <p class="meta">Quick reference for today's effort</p>
-        <div class="zoneline"><span class="name">Zone 2 — Easy / Long</span><span class="range" style="color:var(--cardio)">141–152</span></div>
-        <div class="zoneline"><span class="name">Tempo</span><span class="range" style="color:#E07A4F">165–175</span></div>
-        <div class="zoneline"><span class="name">Intervals</span><span class="range" style="color:var(--track)">175+</span></div>
+        <div id="todayZoneList"></div>
       </div>
     </section>
 
@@ -364,10 +397,10 @@ button{font-family:inherit;}
         <div class="segctrl" id="segCtrl">
           <button data-s="A" class="active">Day A</button>
           <button data-s="B">Day B</button>
-          <button data-s="C">Day C</button>
-          <button data-s="D">Day D</button>
+          <button data-s="C">Core</button>
         </div>
         <p class="meta" id="strengthMeta">—</p>
+        <div class="protocol" id="strengthProtocol"></div>
         <div id="strengthList"></div>
       </div>
     </section>
@@ -381,20 +414,35 @@ button{font-family:inherit;}
         </div>
         <h2>Long Run Build</h2>
         <p class="meta" id="progressMeta">Tap a week once you've completed it</p>
-        <div class="trackwrap">
-          <svg class="path" viewBox="0 0 400 88" preserveAspectRatio="none">
-            <path d="M10,44 Q60,10 110,44 T210,44 T310,44 T390,44" fill="none" stroke="#2B313B" stroke-width="3"/>
-          </svg>
-          <div class="markers" id="trackMarkers"></div>
+        <div class="trackscroll" id="trackScroll">
+          <div class="trackinner" id="trackInner">
+            <div class="trackwrap">
+              <svg class="path" viewBox="0 0 400 88" preserveAspectRatio="none">
+                <path d="M10,44 Q60,10 110,44 T210,44 T310,44 T390,44" fill="none" stroke="#2B313B" stroke-width="3"/>
+              </svg>
+              <div class="markers" id="trackMarkers"></div>
+            </div>
+            <div class="milelabels" id="mileLabels"></div>
+          </div>
         </div>
-        <div class="milelabels" id="mileLabels"></div>
       </div>
 
       <div class="card">
         <h2>Heart Rate Zones</h2>
-        <div class="zoneline"><span class="name">Zone 2 — Easy / Long</span><span class="range" style="color:var(--cardio)">141–152 bpm</span></div>
-        <div class="zoneline"><span class="name">Tempo</span><span class="range" style="color:#E07A4F">165–175 bpm</span></div>
-        <div class="zoneline"><span class="name">Intervals</span><span class="range" style="color:var(--track)">175+ bpm</span></div>
+        <p class="meta">Resting and maximum come from your health tracking device.</p>
+        <form id="hrForm" class="hr-form">
+          <div class="hr-field">
+            <label for="rhrInput">Resting</label>
+            <input id="rhrInput" type="number" inputmode="numeric" placeholder="58" autocomplete="off">
+          </div>
+          <div class="hr-field">
+            <label for="mhrInput">Maximum</label>
+            <input id="mhrInput" type="number" inputmode="numeric" placeholder="185" autocomplete="off">
+          </div>
+          <button type="submit" class="hr-save">Update</button>
+        </form>
+        <p class="hr-error" id="hrError"></p>
+        <div id="hrVisual"></div>
       </div>
 
       <button class="resetbtn" id="resetBtn">Reset all progress</button>
@@ -427,6 +475,7 @@ button{font-family:inherit;}
     <div class="demo-fig" id="demoFig"></div>
     <p class="demo-name" id="demoName">—</p>
     <p class="demo-sets" id="demoSets">—</p>
+    <p class="demo-why" id="demoWhy"></p>
     <p class="demo-attr" id="demoAttr"></p>
     <button class="demo-close" id="demoClose">Close</button>
   </div>
@@ -441,67 +490,59 @@ button{font-family:inherit;}
   var DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
   var DOW_FULL = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 
+  // Hard days stay hard, easy days stay easy: no full strength session the day
+  // before a quality run (Tue intervals, Fri tempo, Sat long).
   var schedule = [
-    { items: [{label:"Strength A", strength:"A"}, {label:"Easy Run", zone:"z2"}] },           // Sun
-    { items: [{label:"Core Reset", strength:"D"}] },                                           // Mon — REST (light)
-    { items: [{label:"Intervals", zone:"intervals"}] },                                        // Tue
-    { items: [{label:"Core Reset", strength:"D"}] },                                           // Wed — REST (light)
+    { items: [{label:"Rest or 15–20 min Shakeout", zone:"recovery"}] },                        // Sun — recovery from long run
+    { items: [{label:"Strength A", strength:"A"}] },                                           // Mon
+    { items: [{label:"Intervals", zone:"intervals"}] },                                        // Tue — VO2 key session
+    { items: [{label:"Core Reset", strength:"C"}] },                                           // Wed — active recovery
     { items: [{label:"Strength B", strength:"B"}] },                                           // Thu
-    { items: [{label:"Tempo Run", zone:"tempo"}, {label:"Strength C", strength:"C"}] },        // Fri
+    { items: [{label:"Tempo Run", zone:"tempo"}] },                                            // Fri
     { items: [{label:"Long Run", zone:"z2", longRun:true}] }                                   // Sat
   ];
 
-  var zoneText = { z2:"Zone 2 · 141–152 bpm", tempo:"Tempo · 165–175 bpm", intervals:"Intervals · 175+ bpm", recovery:"Easy effort" };
   var zoneClass = { z2:"z2", tempo:"tempo", intervals:"intervals", recovery:"recovery" };
 
+  // Equipment-only list: DBs, bench, chest/shoulder machines, leg curl/extension,
+  // cable (no lat pulldown), bike, treadmill, floor. No barbell, trap bar, box, rope.
+  // Paired as supersets (A1/A2 …) so rest time is work time — keeps the day ≤ 70 min.
+  // `w` is the everyday task the lift carries over to, shown in the demo overlay.
   var strength = {
     A:[
-      {l:"Goblet Squat",s:"3 × 8–10",p:"squat",g:"1760-yn8yg1r"},
-      {l:"Push-Ups",s:"3 × 8–12",p:"push",g:"0662-I4hDWkc"},
-      {l:"One-Arm DB Row",s:"3 × 10/side",p:"pull",g:"0292-C0MA9bC"},
-      {l:"DB Step-Ups (Bench)",s:"3 × 10/leg",p:"step",g:"0431-aXtJhlg"},
-      {l:"KB Swings",s:"3 × 15",p:"swing",g:"0549-UHJlbu3"},
-      {l:"Standing Cable Hip Abduction",s:"3 × 15/side",p:"lateral"},
-      {l:"DB Standing Calf Raise",s:"3 × 15–20",p:"calf",g:"1373-bJYHBIN"},
-      {l:"Plank",s:"3 × 45–60 sec",p:"hold",g:"3665-hCjGsRQ"},
-      {l:"Farmer Carry",s:"3 × 40–60 sec",p:"carry",g:"2133-qPEzJjA"},
-      {l:"Jump Rope (Optional Finisher)",s:"3 × 1 min",p:"calf"}
+      {l:"A1 · DB Romanian Deadlift",s:"4 × 6–8 · heavy",p:"hinge",g:"1459-rR0LJzx",w:"Lifting a heavy box or suitcase off the floor"},
+      {l:"A2 · Pogo Hops",s:"4 × 20 · stiff ankles",p:"calf",gif:"gifs/pogo-hops.gif",w:"Tendon stiffness — free speed at the same effort"},
+      {l:"B1 · Goblet Squat",s:"3 × 8",p:"squat",g:"1760-yn8yg1r",w:"Standing up from low chairs, picking up a child"},
+      {l:"B2 · Machine Shoulder Press",s:"3 × 8–10",p:"press",gif:"gifs/machine-shoulder-press.gif",w:"Lifting luggage into an overhead bin"},
+      {l:"C1 · Farmer Carry (DBs)",s:"3 × 40 m · heavy",p:"carry",g:"2133-qPEzJjA",w:"Carrying grocery bags in both hands"},
+      {l:"C2 · One-Arm DB Row (Bench)",s:"3 × 10/side",p:"pull",g:"0292-C0MA9bC",w:"Pulling a door open, upright running posture"},
+      {l:"D · DB Standing Calf Raise",s:"3 × 12–15 · 3 sec down",p:"calf",g:"1373-bJYHBIN",w:"Achilles durability over 13.1 miles"}
     ],
     B:[
-      {l:"Romanian Deadlift",s:"3 × 8–10",p:"hinge",g:"1459-rR0LJzx"},
-      {l:"Walking Lunges",s:"3 × 10/leg",p:"step",g:"1460-IZVHb27"},
-      {l:"Single-Leg RDL",s:"3 × 8/leg",p:"hinge",g:"1757-gKozT8X"},
-      {l:"Standing DB Overhead Press",s:"3 × 8–10",p:"press",g:"0426-A6wtbuL"},
-      {l:"Bulgarian Split Squat (Bench)",s:"3 × 8/leg",p:"step",g:"0410-qx4fgX7"},
-      {l:"Cable Lat Pulldown",s:"3 × 10–12",p:"pull"},
-      {l:"Side Plank",s:"3 × 30–45 sec/side",p:"hold",g:"3544-5VXmnV5"},
-      {l:"Dead Bug",s:"3 × 10/side",p:"deadbug",g:"0276-iny3m5y"},
-      {l:"Hammer Curls (Optional)",s:"2 × 12",p:"curl",g:"0313-slDvUAU"},
-      {l:"OH Triceps Extension (Optional)",s:"2 × 12",p:"curl",g:"0430-PdmaD0N"}
+      {l:"A1 · Bulgarian Split Squat (Bench)",s:"4 × 8/leg · DBs",p:"step",g:"0410-qx4fgX7",w:"Stairs, stepping off a curb under load"},
+      {l:"A2 · Jump Squats",s:"4 × 6 · soft landings",p:"squat",gif:"gifs/jump-squats.gif",w:"Explosive push-off — stride power"},
+      {l:"B1 · DB Step-Up (Bench)",s:"3 × 8/leg",p:"step",g:"0431-aXtJhlg",w:"Climbing stairs holding shopping"},
+      {l:"B2 · Machine Chest Press",s:"3 × 8–10",p:"push",gif:"gifs/machine-chest-press.gif",w:"Pushing a heavy door or stuck window"},
+      {l:"C1 · Single-Leg DB RDL",s:"3 × 8/leg",p:"hinge",g:"1757-gKozT8X",w:"Reaching down for a bag without losing balance"},
+      {l:"C2 · Suitcase Carry (DB)",s:"3 × 30 m/side",p:"carry",g:"3548-mWBtgmb",w:"Carrying one heavy bag without leaning"},
+      {l:"D1 · Cable Pallof Press",s:"3 × 10/side",p:"rotate",g:"0979-9pa4H5m",w:"Resisting twist — stops energy leaks when tired"},
+      {l:"D2 · Machine Leg Curl",s:"3 × 12–15",p:"hinge",gif:"gifs/machine-leg-curl.gif",w:"Hamstring durability on hills and long runs"}
     ],
     C:[
-      {l:"Kettlebell Swings",s:"3 × 15",p:"swing",g:"0549-UHJlbu3"},
-      {l:"Turkish Get-Up",s:"2 × 3/side",p:"getup",g:"0551-Ha7SZ3y"},
-      {l:"DB Lateral Lunge",s:"3 × 8/leg",p:"lateral",g:"1410-py1HSzx"},
-      {l:"Pallof Press",s:"3 × 10/side",p:"rotate",g:"0979-9pa4H5m"},
-      {l:"Single-Leg Glute Bridge",s:"3 × 10/leg",p:"bridge",g:"3645-rmEukuS"},
-      {l:"Suitcase Carry",s:"3 × 30–40 sec/side",p:"carry",g:"3548-mWBtgmb"},
-      {l:"Cable Rotational Chop (Optional)",s:"2 × 8/side",p:"rotate"},
-      {l:"Tibialis Raises",s:"2 × 15",p:"calf"}
-    ],
-    D:[
-      {l:"Diaphragmatic Breathing + Draw-In",s:"3 × 10 breaths",p:"hold"},
-      {l:"Dead Bug",s:"3 × 10/side",p:"deadbug",g:"0276-iny3m5y"},
-      {l:"Bird Dog",s:"3 × 8/side",p:"deadbug"},
-      {l:"Posterior Pelvic Tilts",s:"2 × 15",p:"bridge"},
-      {l:"Glute Bridge Hold",s:"3 × 20–30 sec",p:"bridge"},
-      {l:"Kneeling Hip Flexor Stretch",s:"2 × 30–45 sec/side",p:"hold"}
+      {l:"Diaphragmatic Breathing + Draw-In",s:"3 × 10 breaths",p:"hold",w:"Rib position and breathing under fatigue"},
+      {l:"Dead Bug",s:"3 × 10/side",p:"deadbug",g:"0276-iny3m5y",w:"Bracing while reaching overhead"},
+      {l:"Bird Dog",s:"3 × 8/side",p:"deadbug",w:"Keeping a steady trunk on one leg"},
+      {l:"Side-Lying Hip Abduction",s:"3 × 15/side",p:"lateral",g:"0628-O95afRA",w:"Hip stability — knee tracking, IT band"},
+      {l:"Single-Leg Glute Bridge",s:"3 × 10/leg",p:"bridge",g:"3645-rmEukuS",w:"Glute drive for hip extension"},
+      {l:"Tibialis Raise",s:"2 × 20",p:"calf",w:"Shin durability on downhills"},
+      {l:"Kneeling Hip Flexor Stretch",s:"2 × 30–45 sec/side",p:"hold",w:"Undoing hours of sitting"}
     ]
   };
-  // Media © Gym visual — https://gymvisual.com/, redistributed via
-  // github.com/hasaneyldrm/exercises-dataset. Falls back to the built-in
-  // stick-figure animation (below) if an exercise has no "g" id, or if the
-  // GIF fails to load (e.g. no signal at the gym).
+  // Dataset clips (field "g") are © Gym visual — https://gymvisual.com/,
+  // redistributed via github.com/hasaneyldrm/exercises-dataset.
+  // Local clips (field "gif") live in gifs/ and cover moves the dataset
+  // does not have. Falls back to the stick-figure animation if neither
+  // is set, or if a clip fails to load (e.g. no signal at the gym).
   var GIF_BASE = "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/";
 
   // Two-pose coordinate sets per movement pattern, used to build a looping
@@ -557,14 +598,21 @@ button{font-family:inherit;}
       + drawPose(p.a,'pa') + drawPose(p.b,'pb') + '</svg>';
   }
 
+  function demoUrl(ex){
+    if(ex.gif) return ex.gif;
+    if(ex.g) return GIF_BASE + ex.g + '.gif';
+    return '';
+  }
+
   // Mounts a real exercise demo GIF into `container` when available,
   // falling back to the built-in stick-figure animation if the exercise has
-  // no dataset match, or if the GIF fails to load (e.g. no signal at the gym).
+  // no clip, or if the GIF fails to load (e.g. no signal at the gym).
   function mountDemo(container, ex){
     container.innerHTML = '';
-    if(ex.g){
+    var url = demoUrl(ex);
+    if(url){
       var img = document.createElement('img');
-      img.src = GIF_BASE + ex.g + '.gif';
+      img.src = url;
       img.alt = ex.l + ' demo';
       img.loading = 'lazy';
       img.onerror = function(){ container.innerHTML = figureSVG(ex.p); };
@@ -574,23 +622,18 @@ button{font-family:inherit;}
     }
   }
 
+  // Weeks 1–7 are the completed base block; weeks 8–14 are the 7 weeks left,
+  // building from the 9 mi long run to a 12 mi peak and two down weeks into race day.
   var longRun = [
-    {mi:5}, {mi:6}, {mi:7}, {mi:5, deload:true}, {mi:8}, {mi:9}, {mi:10}, {mi:7, taper:true}
+    {mi:5}, {mi:6}, {mi:7}, {mi:5, deload:true}, {mi:7}, {mi:8}, {mi:9},
+    {mi:10}, {mi:11}, {mi:8, deload:true}, {mi:12}, {mi:10}, {mi:8, taper:true}, {mi:13.1, race:true}
   ];
 
-  // 8-week interval progression (Tuesdays)
-  var intervalPlan = [
-    '4 × 400m · 90s rest',
-    '5 × 400m · 90s rest',
-    '6 × 400m · 90s rest',
-    '4 × 400m · 90s rest (deload)',
-    '5 × 600m · 2 min rest',
-    '6 × 600m · 2 min rest',
-    '4 × 800m · 2 min rest',
-    'Easy jog only · taper'
-  ];
+  function lrTag(lr){
+    return lr.race ? ' \u00b7 RACE' : lr.taper ? ' \u00b7 taper' : lr.deload ? ' \u00b7 deload' : '';
+  }
 
-  // 8-week tempo progression (Fridays)
+  // Fridays — threshold work at half-marathon to 10K effort.
   var tempoPlan = [
     '2 × 8 min · 2 min jog',
     '2 × 10 min · 2 min jog',
@@ -599,11 +642,17 @@ button{font-family:inherit;}
     '22 min continuous',
     '25 min continuous',
     '2 × 12 min · 2 min jog',
-    'Easy jog only · taper'
+    '20 min continuous',
+    '2 × 12 min · 2 min jog',
+    '15 min continuous · deload',
+    '25 min continuous',
+    '2 × 15 min · 2 min jog',
+    '20 min continuous · taper',
+    'Rest or 15 min shakeout'
   ];
 
   /* ---------------- state ---------------- */
-  var KEY = "hmtrack_v2";
+  var KEY = "hmtrack_v3";
 
   function pad(n){ return n<10 ? '0'+n : ''+n; }
   function isoDate(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
@@ -619,10 +668,142 @@ button{font-family:inherit;}
 
   var state = load();
 
+  // Heart-rate reserve zones (Karvonen), the method used by health tracking devices.
+  // Boundary = round((max − rest) × percent + rest). Each band is 10%.
+  var ZONE_DEFS = [
+    {key:'z1', name:'Zone 1', role:'Recovery', pct:0.50, color:'#8A93A0'},
+    {key:'z2', name:'Zone 2', role:'Easy / Long', pct:0.60, color:'#4FA8A0'},
+    {key:'z3', name:'Zone 3', role:'Moderate', pct:0.70, color:'#C4A35A'},
+    {key:'z4', name:'Zone 4', role:'Tempo', pct:0.80, color:'#E07A4F'},
+    {key:'z5', name:'Zone 5', role:'Intervals', pct:0.90, color:'#D2491F'}
+  ];
+
+  function wholeHr(raw){
+    if(raw==null) return null;
+    var s = String(raw).trim();
+    if(!/^\d+$/.test(s)) return null;
+    return parseInt(s, 10);
+  }
+
+  function validateHr(rhr, mhr){
+    if(!Number.isInteger(rhr) || !Number.isInteger(mhr)) return 'Enter a whole number for resting and for maximum.';
+    if(mhr <= rhr) return 'Maximum must be higher than resting.';
+    if(mhr - rhr < 30) return 'Maximum should be at least 30 bpm above resting.';
+    return '';
+  }
+
+  function heartZones(){
+    var rhr = state.rhr, mhr = state.mhr;
+    if(validateHr(rhr, mhr)) return null;
+    var edges = ZONE_DEFS.map(function(z){
+      return Math.round((mhr - rhr) * z.pct + rhr);
+    });
+    edges.push(mhr);
+    for(var i=1;i<edges.length-1;i++){
+      if(edges[i] <= edges[i-1]) edges[i] = edges[i-1] + 1;
+    }
+    if(edges[4] >= mhr) edges[4] = mhr;
+    return {
+      rhr:rhr, mhr:mhr,
+      zones: ZONE_DEFS.map(function(z, i){
+        var lo = edges[i];
+        var hi = i === ZONE_DEFS.length-1 ? mhr : edges[i+1] - 1;
+        if(hi < lo) hi = lo;
+        return {key:z.key, name:z.name, role:z.role, color:z.color, low:lo, high:hi};
+      })
+    };
+  }
+
+  function zoneOf(pack, key){
+    if(!pack) return null;
+    for(var i=0;i<pack.zones.length;i++) if(pack.zones[i].key===key) return pack.zones[i];
+    return null;
+  }
+
+  function rangeText(z){ return z.low+'\u2013'+z.high; }
+
+  function zoneChip(kind){
+    var pack = heartZones();
+    if(kind==='recovery') return 'Easy effort';
+    if(kind==='z2'){
+      var easy = zoneOf(pack, 'z2');
+      return easy ? 'Zone 2 \u00b7 '+rangeText(easy)+' bpm' : 'Zone 2';
+    }
+    if(kind==='tempo'){
+      var tempo = zoneOf(pack, 'z4');
+      return tempo ? 'Tempo \u00b7 '+rangeText(tempo)+' bpm' : 'Tempo';
+    }
+    if(kind==='intervals'){
+      var hard = zoneOf(pack, 'z5');
+      return hard ? 'Intervals \u00b7 '+rangeText(hard)+' bpm' : 'Intervals \u00b7 6 \u00d7 2 min';
+    }
+    return '';
+  }
+
+  function intervalPrescription(){
+    var pack = heartZones();
+    var work = zoneOf(pack, 'z5');
+    var rec = zoneOf(pack, 'z1');
+    if(!work || !rec) return '6 \u00d7 2 min work \u00b7 2 min recovery';
+    return '6 \u00d7 2 min \u00b7 '+rangeText(work)+' \u00b7 2 min '+rangeText(rec);
+  }
+
+  function tempoPrescription(wkIdx){
+    var base = tempoPlan[wkIdx];
+    var tempo = zoneOf(heartZones(), 'z4');
+    return tempo ? base+' \u00b7 '+rangeText(tempo) : base;
+  }
+
+  function zoneRows(list){
+    return list.map(function(z){
+      return '<div class="zoneline"><span class="name">'+z.name+' \u2014 '+z.role+'</span>'
+        +'<span class="range" style="color:'+z.color+'">'+rangeText(z)+' bpm</span></div>';
+    }).join('');
+  }
+
+  function renderHeartUi(){
+    var rIn = document.getElementById('rhrInput');
+    var mIn = document.getElementById('mhrInput');
+    if(rIn && document.activeElement !== rIn) rIn.value = state.rhr==null ? '' : state.rhr;
+    if(mIn && document.activeElement !== mIn) mIn.value = state.mhr==null ? '' : state.mhr;
+
+    var visual = document.getElementById('hrVisual');
+    var errEl = document.getElementById('hrError');
+    var pack = heartZones();
+    if(pack){
+      errEl.textContent = '';
+      visual.innerHTML = '<div class="zonebar" aria-hidden="true">'
+        + pack.zones.map(function(z){ return '<span style="background:'+z.color+'"></span>'; }).join('')
+        + '</div>' + zoneRows(pack.zones);
+    } else if(state.rhr!=null || state.mhr!=null){
+      errEl.textContent = validateHr(state.rhr, state.mhr);
+      visual.innerHTML = '';
+    } else {
+      errEl.textContent = '';
+      visual.innerHTML = '<p class="hr-note">Add both numbers to calculate your five zones.</p>';
+    }
+
+    var today = document.getElementById('todayZoneList');
+    if(!today) return;
+    if(!pack){
+      today.innerHTML = '<p class="hr-note" style="margin:0">Set resting and maximum heart rate on the Progress tab.</p>';
+      return;
+    }
+    today.innerHTML = [
+      {key:'z2', title:'Zone 2 \u2014 Easy / Long'},
+      {key:'z4', title:'Tempo'},
+      {key:'z5', title:'Intervals'}
+    ].map(function(item){
+      var z = zoneOf(pack, item.key);
+      return '<div class="zoneline"><span class="name">'+item.title+'</span>'
+        +'<span class="range" style="color:'+z.color+'">'+rangeText(z)+'</span></div>';
+    }).join('');
+  }
+
   function defaultState(){
-    var s = { week:{}, strengthDone:{A:[],B:[],C:[],D:[]}, strengthWt:{A:[],B:[],C:[],D:[]}, longrun:[], startDate:'2026-08-03' };
+    var s = { week:{}, strengthDone:{A:[],B:[],C:[]}, strengthWt:{A:[],B:[],C:[]}, longrun:[], startDate:'2026-08-03', rhr:null, mhr:null };
     for(var d=0; d<7; d++){ s.week[d] = schedule[d].items.map(function(){return false;}); }
-    ["A","B","C","D"].forEach(function(k){
+    ["A","B","C"].forEach(function(k){
       s.strengthDone[k] = strength[k].map(function(){return false;});
       s.strengthWt[k] = strength[k].map(function(){return "";});
     });
@@ -638,6 +819,8 @@ button{font-family:inherit;}
       if(!raw) return s;
       var parsed = JSON.parse(raw);
       if(parsed.startDate) s.startDate = parsed.startDate;
+      if(Number.isInteger(parsed.rhr)) s.rhr = parsed.rhr;
+      if(Number.isInteger(parsed.mhr)) s.mhr = parsed.mhr;
       if(parsed.week){
         for(var d=0; d<7; d++){
           if(!parsed.week[d]) continue;
@@ -646,7 +829,7 @@ button{font-family:inherit;}
           }
         }
       }
-      ["A","B","C","D"].forEach(function(k){
+      ["A","B","C"].forEach(function(k){
         if(parsed.strengthDone && parsed.strengthDone[k]){
           for(var i=0;i<s.strengthDone[k].length;i++){
             if(typeof parsed.strengthDone[k][i]==='boolean') s.strengthDone[k][i] = parsed.strengthDone[k][i];
@@ -713,13 +896,13 @@ button{font-family:inherit;}
       var chipHtml = '';
       if(item.longRun){
         var lr = longRun[wkIdx];
-        var tag = lr.taper ? ' (taper)' : (lr.deload ? ' (deload)' : '');
-        label = label + ' — ' + lr.mi + ' mi' + tag + ' · Wk ' + (wkIdx+1);
-        chipHtml = '<span class="chip z2">'+zoneText['z2']+'</span>';
+        if(lr.race) label = 'Half Marathon';
+        label = label + ' — ' + lr.mi + ' mi' + lrTag(lr) + ' · Wk ' + (wkIdx+1);
+        chipHtml = '<span class="chip z2">'+zoneChip('z2')+'</span>';
       } else if(item.zone){
-        chipHtml = '<span class="chip '+zoneClass[item.zone]+'">'+zoneText[item.zone]+'</span>';
+        chipHtml = '<span class="chip '+zoneClass[item.zone]+'">'+zoneChip(item.zone)+'</span>';
       } else if(item.strength){
-        chipHtml = '<span class="chip recovery">Strength '+item.strength+'</span>';
+        chipHtml = '<span class="chip recovery">'+(item.strength==='C' ? 'Core \u00b7 18 min' : 'Strength '+item.strength+' \u00b7 70 min')+'</span>';
       }
       row.innerHTML =
         '<button class="check'+(on?' on':'')+'" data-i="'+i+'" aria-label="Toggle complete">'+CHECK_SVG+'</button>'+
@@ -730,9 +913,10 @@ button{font-family:inherit;}
     // Populate this-week running plan card
     var lr = longRun[wkIdx];
     document.getElementById('weekBadge').textContent = 'Week ' + (wkIdx+1);
-    document.getElementById('intervalLabel').textContent = intervalPlan[wkIdx];
-    document.getElementById('tempoLabel').textContent = tempoPlan[wkIdx];
-    document.getElementById('longLabel').textContent = lr.mi + ' mi' + (lr.taper ? ' · taper' : lr.deload ? ' · deload' : '');
+    document.getElementById('intervalLabel').textContent = intervalPrescription();
+    document.getElementById('tempoLabel').textContent = tempoPrescription(wkIdx);
+    document.getElementById('longLabel').textContent = lr.mi + ' mi' + lrTag(lr);
+    renderHeartUi();
 
     var allDone = items.length>0 && items.every(function(_,i){return state.week[idx][i];});
     document.getElementById('heroCard').classList.toggle('is-complete', allDone);
@@ -761,8 +945,8 @@ button{font-family:inherit;}
         var label = item.label;
         if(item.longRun){
           var lr = longRun[curWk];
-          var tag = lr.taper ? ' (taper)' : (lr.deload ? ' (deload)' : '');
-          label = label + ' — ' + lr.mi + 'mi' + tag;
+          if(lr.race) label = 'Half Marathon';
+          label = label + ' — ' + lr.mi + 'mi' + lrTag(lr);
         }
         return '<div class="miniitem"><button class="minicheck'+(on?' on':'')+'" data-d="'+idx+'" data-i="'+i+'">'+CHECK_SVG+'</button><span class="label">'+label+'</span></div>';
       }).join('');
@@ -782,11 +966,35 @@ button{font-family:inherit;}
 
   /* ---------------- strength view ---------------- */
   var currentStrength = 'A';
-  var strengthLabels = { A:'Day A — Squat & Power', B:'Day B — Posterior Chain & Stability', C:'Day C — Functional & Runner\u2019s Core', D:'Day D — Core Reset & Posture' };
+  var strengthLabels = {
+    A:'Day A — Lift & Carry Strength',
+    B:'Day B — Single-Leg Power & Stability',
+    C:'Core Reset — Posture, Breathing & Hips'
+  };
+  var strengthProtocol = {
+    A:{ warm:'5 min easy bike + leg swings, 2 light ramp-up RDL sets',
+        work:'Supersets A1/A2 \u2192 D. Rest 2 min after the heavy pair, 90 sec after the rest. Floor space for carries between sets.',
+        time:'\u2248 50 min work \u00b7 70 min door to door',
+        cool:'5 min easy bike or walk + calf and hip flexor stretch' },
+    B:{ warm:'5 min easy bike + glute bridges and ankle circles',
+        work:'Supersets A1/A2 \u2192 D1/D2. Rest 90 sec after each pair, 60 sec on the core pair. DBs + bench + cable only.',
+        time:'\u2248 50 min work \u00b7 70 min door to door',
+        cool:'5 min easy bike or walk + hamstring and quad stretch' },
+    C:{ warm:'No warm-up needed \u2014 start slow and breathe',
+        work:'Straight through on a mat, bodyweight only. Minimal rest. Quality over load.',
+        time:'\u2248 18 min',
+        cool:'Finish in the hip flexor stretch' }
+  };
   function renderStrength(){
     document.querySelectorAll('#segCtrl button').forEach(function(b){
       b.classList.toggle('active', b.getAttribute('data-s')===currentStrength);
     });
+    var pr = strengthProtocol[currentStrength];
+    document.getElementById('strengthProtocol').innerHTML =
+      '<div class="prow"><span class="pk">Warm-up</span><span class="pv">'+pr.warm+'</span></div>'+
+      '<div class="prow"><span class="pk">Format</span><span class="pv">'+pr.work+'</span></div>'+
+      '<div class="prow"><span class="pk">Cool-down</span><span class="pv">'+pr.cool+'</span></div>'+
+      '<div class="prow"><span class="pk">Time</span><span class="pv">'+pr.time+'</span></div>';
     var list = strength[currentStrength];
     var doneArr = state.strengthDone[currentStrength];
     var wtArr = state.strengthWt[currentStrength];
@@ -838,6 +1046,7 @@ button{font-family:inherit;}
     mountDemo(document.getElementById('demoFig'), ex);
     document.getElementById('demoName').textContent = ex.l;
     document.getElementById('demoSets').textContent = ex.s || '';
+    document.getElementById('demoWhy').textContent = ex.w ? 'Everyday carry-over: ' + ex.w : '';
     document.getElementById('demoAttr').textContent = ex.g ? '© Gym visual — gymvisual.com' : '';
     document.getElementById('demoOverlay').classList.add('open');
   }
@@ -864,19 +1073,22 @@ button{font-family:inherit;}
     var labels = document.getElementById('mileLabels');
     markers.innerHTML = '';
     labels.innerHTML = '';
-    var offsets = [0,-16,-22,-14,2,16,22,14];
+    // Widen the track past the viewport when there are too many weeks to fit,
+    // then follow the wave of the SVG path underneath it.
+    document.getElementById('trackInner').style.width = (longRun.length*34) + 'px';
+    function offsetFor(i){ return Math.round(-22 * Math.sin(2*Math.PI*i/longRun.length)); }
     longRun.forEach(function(wk, i){
       var on = state.longrun[i];
       var isCurrent = i === curWk;
       var m = document.createElement('button');
       m.className = 'marker' + (on?' on':'') + (isCurrent?' current':'');
-      m.style.transform = 'translateY('+offsets[i]+'px)';
+      m.style.transform = 'translateY('+offsetFor(i)+'px)';
       m.setAttribute('data-i', i);
       m.textContent = on ? '✓' : (i+1);
       markers.appendChild(m);
 
       var lab = document.createElement('span');
-      lab.textContent = wk.taper ? wk.mi+'↓T' : (wk.deload ? wk.mi+'↓' : wk.mi+'mi');
+      lab.textContent = wk.race ? 'RACE' : wk.taper ? wk.mi+'↓T' : (wk.deload ? wk.mi+'↓' : wk.mi+'mi');
       labels.appendChild(lab);
     });
     markers.querySelectorAll('.marker').forEach(function(btn){
@@ -886,6 +1098,11 @@ button{font-family:inherit;}
         save(); renderProgress();
       });
     });
+
+    var scroller = document.getElementById('trackScroll');
+    var cur = markers.children[curWk];
+    if(cur) scroller.scrollLeft = cur.offsetLeft + cur.offsetWidth/2 - scroller.clientWidth/2;
+    renderHeartUi();
   }
 
   document.getElementById('startDateInput').addEventListener('change', function(e){
@@ -896,9 +1113,30 @@ button{font-family:inherit;}
     }
   });
 
+  document.getElementById('hrForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var rhr = wholeHr(document.getElementById('rhrInput').value);
+    var mhr = wholeHr(document.getElementById('mhrInput').value);
+    var err = validateHr(rhr, mhr);
+    var errEl = document.getElementById('hrError');
+    if(err){
+      errEl.textContent = err;
+      return;
+    }
+    errEl.textContent = '';
+    state.rhr = rhr;
+    state.mhr = mhr;
+    save();
+    renderAll();
+  });
+
   document.getElementById('resetBtn').addEventListener('click', function(){
     if(confirm('Reset all checkmarks, weights and progress?')){
+      var keepRhr = state.rhr, keepMhr = state.mhr, keepStart = state.startDate;
       state = defaultState();
+      state.rhr = keepRhr;
+      state.mhr = keepMhr;
+      state.startDate = keepStart;
       save();
       renderAll();
     }
